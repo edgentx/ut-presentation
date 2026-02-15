@@ -930,49 +930,65 @@
     const syncRole = params.get('role'); // 'presenter' or null (viewer)
 
     if (syncRole === 'presenter' || syncRole === 'viewer' || params.has('sync')) {
-        const fbApp = firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        const slideRef = db.ref('presentation/currentSlide');
-        const syncBadge = document.getElementById('syncBadge');
-        const syncLabel = document.getElementById('syncLabel');
+        try {
+            const fbApp = firebase.initializeApp(firebaseConfig);
+            const db = firebase.database();
+            const slideRef = db.ref('presentation/currentSlide');
+            const syncBadge = document.getElementById('syncBadge');
+            const syncLabel = document.getElementById('syncLabel');
 
-        if (syncRole === 'presenter') {
-            // PRESENTER: broadcast slide changes
-            syncBadge.style.display = 'block';
-            syncBadge.classList.add('presenter');
-            syncLabel.textContent = 'Presenter';
+            if (syncRole === 'presenter') {
+                // PRESENTER: broadcast slide changes
+                syncBadge.style.display = 'block';
+                syncBadge.classList.add('presenter');
+                syncLabel.textContent = 'Presenter';
 
-            // Override goToSlide to also push to Firebase
-            const originalGoToSlide = goToSlide;
-            goToSlide = function(n) {
-                originalGoToSlide(n);
-                slideRef.set({ slide: currentSlide, timestamp: Date.now() });
-            };
+                // Override goToSlide to also push to Firebase
+                const originalGoToSlide = goToSlide;
+                goToSlide = function(n) {
+                    originalGoToSlide(n);
+                    slideRef.set({ slide: currentSlide, timestamp: Date.now() });
+                };
 
-            // Set initial slide
-            slideRef.set({ slide: 0, timestamp: Date.now() });
+                // Set initial slide
+                slideRef.set({ slide: 0, timestamp: Date.now() });
 
-        } else {
-            // VIEWER: follow presenter's slide
-            syncBadge.style.display = 'block';
-            syncBadge.classList.add('viewer');
-            syncLabel.textContent = 'Following presenter';
+            } else {
+                // VIEWER: follow presenter's slide
+                syncBadge.style.display = 'block';
+                syncBadge.classList.add('viewer');
+                syncLabel.textContent = 'Connecting...';
 
-            // Auto-enter presentation mode
-            presenting = true;
-            document.body.classList.add('presenting');
-            document.documentElement.style.scrollSnapType = 'none';
-            document.documentElement.style.overflow = 'hidden';
-            document.body.style.overflow = 'hidden';
-            goToSlide(0);
+                // Auto-enter presentation mode after a short delay for mobile layout
+                setTimeout(() => {
+                    window.scrollTo(0, 0);
+                    presenting = true;
+                    document.body.classList.add('presenting');
+                    document.documentElement.style.scrollSnapType = 'none';
+                    document.documentElement.style.overflow = 'hidden';
+                    document.body.style.overflow = 'hidden';
+                    allSlides.forEach(s => s.classList.remove('slide-active'));
 
-            // Listen for slide changes
-            slideRef.on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (data && typeof data.slide === 'number') {
-                    goToSlide(data.slide);
-                }
-            });
+                    // Show mobile nav if on mobile
+                    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768) {
+                        document.getElementById('mobileNav').style.display = 'block';
+                        document.getElementById('exitHint').textContent = 'Tap to exit';
+                    }
+
+                    setTimeout(() => goToSlide(0), 50);
+
+                    // Listen for slide changes from presenter
+                    slideRef.on('value', (snapshot) => {
+                        const data = snapshot.val();
+                        if (data && typeof data.slide === 'number') {
+                            syncLabel.textContent = 'Following presenter';
+                            goToSlide(data.slide);
+                        }
+                    });
+                }, 200);
+            }
+        } catch(e) {
+            console.error('Firebase sync error:', e);
         }
     }
 </script>
