@@ -976,6 +976,8 @@
                 syncBadge.classList.add('viewer');
                 syncLabel.textContent = 'Connecting...';
 
+                let latestSlide = 0; // track latest slide from Firebase
+
                 function enterViewerMode() {
                     window.scrollTo(0, 0);
                     presenting = true;
@@ -990,38 +992,38 @@
                         document.getElementById('exitHint').textContent = 'Tap to exit';
                     }
 
-                    setTimeout(() => goToSlide(0), 50);
+                    // Use the latest slide from Firebase, not 0
+                    setTimeout(() => goToSlide(latestSlide), 50);
                 }
 
-                // Enter presentation mode after layout settles
-                setTimeout(enterViewerMode, 300);
-
-                // Listen for slide changes from presenter
+                // Listen for slide changes from presenter (starts immediately)
                 slideRef.on('value', (snapshot) => {
                     const data = snapshot.val();
                     if (data && typeof data.slide === 'number') {
-                        // Re-enter presentation mode if exited
-                        if (!presenting) enterViewerMode();
-                        goToSlide(data.slide);
+                        latestSlide = data.slide;
+                        // Only call goToSlide if presentation mode is active
+                        if (presenting) {
+                            goToSlide(data.slide);
+                        }
                         syncLabel.textContent = 'Slide ' + (data.slide + 1) + ' - Following';
                     }
                 });
+
+                // Enter presentation mode after layout settles
+                setTimeout(enterViewerMode, 300);
 
                 // Reconnect when screen wakes up or tab becomes visible
                 document.addEventListener('visibilitychange', () => {
                     if (document.visibilityState === 'visible') {
                         syncLabel.textContent = 'Reconnecting...';
-                        // Force Firebase to reconnect
                         firebase.database().goOffline();
                         firebase.database().goOnline();
-                        // Re-enter presentation mode if needed
                         if (!presenting) {
                             setTimeout(enterViewerMode, 200);
                         }
                     }
                 });
 
-                // Also handle page focus (some mobile browsers use this instead)
                 window.addEventListener('focus', () => {
                     if (isSync && syncRole !== 'presenter') {
                         firebase.database().goOffline();
