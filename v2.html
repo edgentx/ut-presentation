@@ -314,7 +314,7 @@
         .card-zoom-content h3 { font-size: 1.3rem !important; margin-bottom: 12px !important; }
         .card-zoom-content p { font-size: 1rem !important; line-height: 1.6 !important; }
         .card-zoom-content .tag { font-size: 0.7rem !important; padding: 4px 10px !important; margin-bottom: 12px !important; }
-        .card-zoom-content .card-accent { width: 40px !important; height: 4px !important; margin-bottom: 15px !important; }
+        .card-zoom-content .card-accent { width: 40px !important; height: 4px !important; margin-bottom: 15px !important; background: var(--orange) !important; display: block !important; }
         .card-zoom-content .icon { width: 45px !important; height: 45px !important; font-size: 22px !important; margin-bottom: 12px !important; }
         .card-zoom-content .number { font-size: 3rem !important; }
         .card-zoom-hint { color: rgba(255,255,255,0.5); font-size: 0.7rem; text-align: center; margin-top: 12px; letter-spacing: 1px; text-transform: uppercase; font-family: 'Inter', sans-serif; }
@@ -1143,14 +1143,29 @@
 
     function zoomCard(card) {
         zoomContent.innerHTML = card.innerHTML;
+        // Ensure accent line exists
+        if (!zoomContent.querySelector('.card-accent')) {
+            const accent = document.createElement('div');
+            accent.className = 'card-accent';
+            // Insert after icon or tag if present, otherwise at the start
+            const firstH3 = zoomContent.querySelector('h3');
+            if (firstH3) zoomContent.insertBefore(accent, firstH3);
+            else zoomContent.prepend(accent);
+        }
         const style = getComputedStyle(card);
         zoomContent.style.background = style.backgroundColor;
         zoomContent.style.color = style.color;
         if (card.classList.contains('approach-card')) {
             const idx = Array.from(card.parentElement.children).indexOf(card);
-            if (idx === 0) { zoomContent.style.background = '#bf5700'; zoomContent.style.color = 'white'; }
-            else if (idx === 1) { zoomContent.style.background = '#333f48'; zoomContent.style.color = 'white'; }
+            const accent = zoomContent.querySelector('.card-accent');
+            if (idx === 0) { zoomContent.style.background = '#bf5700'; zoomContent.style.color = 'white'; if (accent) accent.style.background = 'white'; }
+            else if (idx === 1) { zoomContent.style.background = '#333f48'; zoomContent.style.color = 'white'; if (accent) accent.style.background = 'var(--tangerine)'; }
             else { zoomContent.style.background = 'white'; zoomContent.style.color = '#333f48'; }
+        }
+        // White accent line on dark card backgrounds
+        if (card.closest('.dark')) {
+            const accent = zoomContent.querySelector('.card-accent');
+            if (accent) accent.style.background = 'var(--tangerine)';
         }
         zoomOverlay.classList.add('active');
     }
