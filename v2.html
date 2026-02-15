@@ -811,6 +811,9 @@
 
     function enterPresentation() {
         presenting = true;
+        // Disconnect scroll observers so they don't interfere
+        sectionObserver.disconnect();
+        scrollObserver2.disconnect();
         // Scroll to top first to prevent mobile jump
         window.scrollTo(0, 0);
         document.body.classList.add('presenting');
@@ -842,6 +845,9 @@
         document.body.style.overflow = '';
         allSlides.forEach(s => s.classList.remove('slide-active'));
         document.getElementById('mobileNav').style.display = 'none';
+        // Reconnect scroll observers
+        sections.forEach(s => sectionObserver.observe(s));
+        sections.forEach(s => scrollObserver2.observe(s));
         if (document.fullscreenElement || document.webkitFullscreenElement) {
             if (document.exitFullscreen) document.exitFullscreen();
             else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
@@ -983,10 +989,17 @@
                 syncBadge.classList.add('viewer');
                 syncLabel.textContent = 'Connecting...';
 
+                // Hide present button and key hint for viewers
+                document.getElementById('presentBtn').style.display = 'none';
+                document.getElementById('keyHint').style.display = 'none';
+
                 let latestSlide = 0; // track latest slide from Firebase
 
                 function enterViewerMode() {
                     window.scrollTo(0, 0);
+                    // Disconnect observers before entering presentation mode
+                    sectionObserver.disconnect();
+                    scrollObserver2.disconnect();
                     presenting = true;
                     document.body.classList.add('presenting');
                     document.documentElement.style.scrollSnapType = 'none';
