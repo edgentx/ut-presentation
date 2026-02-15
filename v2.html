@@ -939,10 +939,13 @@
 
     if (isSync) {
         try {
-            const fbApp = firebase.initializeApp(firebaseConfig);
+            // Avoid re-init error if Firebase already initialized
+            let fbApp;
+            try { fbApp = firebase.app(); } catch(e) { fbApp = firebase.initializeApp(firebaseConfig); }
             const db = firebase.database();
             const slideRef = db.ref('presentation/currentSlide');
             const syncBadge = document.getElementById('syncBadge');
+            const syncLabel = document.getElementById('syncLabel');
 
             if (syncRole === 'presenter') {
                 // PRESENTER: broadcast slide changes
@@ -973,8 +976,7 @@
                 syncBadge.classList.add('viewer');
                 syncLabel.textContent = 'Connecting...';
 
-                // Auto-enter presentation mode after a short delay for mobile layout
-                setTimeout(() => {
+                function enterViewerMode() {
                     window.scrollTo(0, 0);
                     presenting = true;
                     document.body.classList.add('presenting');
@@ -983,25 +985,49 @@
                     document.body.style.overflow = 'hidden';
                     allSlides.forEach(s => s.classList.remove('slide-active'));
 
-                    // Show mobile nav if on mobile
                     if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768) {
                         document.getElementById('mobileNav').style.display = 'block';
                         document.getElementById('exitHint').textContent = 'Tap to exit';
                     }
 
-                    setTimeout(() => {
-                        goToSlide(0);
+                    setTimeout(() => goToSlide(0), 50);
+                }
 
-                        // Listen for slide changes from presenter
-                        slideRef.on('value', (snapshot) => {
-                            const data = snapshot.val();
-                            if (data && typeof data.slide === 'number') {
-                                goToSlide(data.slide);
-                                syncLabel.textContent = 'Slide ' + (data.slide + 1) + ' - Following';
-                            }
-                        });
-                    }, 100);
-                }, 300);
+                // Enter presentation mode after layout settles
+                setTimeout(enterViewerMode, 300);
+
+                // Listen for slide changes from presenter
+                slideRef.on('value', (snapshot) => {
+                    const data = snapshot.val();
+                    if (data && typeof data.slide === 'number') {
+                        // Re-enter presentation mode if exited
+                        if (!presenting) enterViewerMode();
+                        goToSlide(data.slide);
+                        syncLabel.textContent = 'Slide ' + (data.slide + 1) + ' - Following';
+                    }
+                });
+
+                // Reconnect when screen wakes up or tab becomes visible
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'visible') {
+                        syncLabel.textContent = 'Reconnecting...';
+                        // Force Firebase to reconnect
+                        firebase.database().goOffline();
+                        firebase.database().goOnline();
+                        // Re-enter presentation mode if needed
+                        if (!presenting) {
+                            setTimeout(enterViewerMode, 200);
+                        }
+                    }
+                });
+
+                // Also handle page focus (some mobile browsers use this instead)
+                window.addEventListener('focus', () => {
+                    if (isSync && syncRole !== 'presenter') {
+                        firebase.database().goOffline();
+                        firebase.database().goOnline();
+                    }
+                });
             }
         } catch(e) {
             console.error('Firebase sync error:', e);
