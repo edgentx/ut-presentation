@@ -1133,36 +1133,72 @@
         }
     }
 
-    // ===== MOBILE TAP-TO-ZOOM CARDS =====
-    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768) {
-        const zoomOverlay = document.getElementById('cardZoom');
-        const zoomContent = document.getElementById('cardZoomContent');
+    // ===== TAP-TO-ZOOM CARDS (with Firebase sync) =====
+    const zoomOverlay = document.getElementById('cardZoom');
+    const zoomContent = document.getElementById('cardZoomContent');
+    const allCards = document.querySelectorAll('.resource-card, .challenge-card, .approach-card');
 
-        document.querySelectorAll('.resource-card, .challenge-card, .approach-card').forEach(card => {
-            card.style.cursor = 'pointer';
-            card.addEventListener('click', (e) => {
-                e.stopPropagation();
-                // Clone the card content into the zoom overlay
-                zoomContent.innerHTML = card.innerHTML;
-                // Copy the card's background and text color
-                const style = getComputedStyle(card);
-                zoomContent.style.background = style.backgroundColor;
-                zoomContent.style.color = style.color;
-                // Match approach card specific colors
-                if (card.classList.contains('approach-card')) {
-                    const idx = Array.from(card.parentElement.children).indexOf(card);
-                    if (idx === 0) { zoomContent.style.background = '#bf5700'; zoomContent.style.color = 'white'; }
-                    else if (idx === 1) { zoomContent.style.background = '#333f48'; zoomContent.style.color = 'white'; }
-                    else { zoomContent.style.background = 'white'; zoomContent.style.color = '#333f48'; }
+    // Index each card for sync identification
+    allCards.forEach((card, i) => card.dataset.cardIndex = i);
+
+    function zoomCard(card) {
+        zoomContent.innerHTML = card.innerHTML;
+        const style = getComputedStyle(card);
+        zoomContent.style.background = style.backgroundColor;
+        zoomContent.style.color = style.color;
+        if (card.classList.contains('approach-card')) {
+            const idx = Array.from(card.parentElement.children).indexOf(card);
+            if (idx === 0) { zoomContent.style.background = '#bf5700'; zoomContent.style.color = 'white'; }
+            else if (idx === 1) { zoomContent.style.background = '#333f48'; zoomContent.style.color = 'white'; }
+            else { zoomContent.style.background = 'white'; zoomContent.style.color = '#333f48'; }
+        }
+        zoomOverlay.classList.add('active');
+    }
+
+    function closeZoom() {
+        zoomOverlay.classList.remove('active');
+    }
+
+    allCards.forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', (e) => {
+            e.stopPropagation();
+            zoomCard(card);
+            // If presenter with sync, broadcast the zoom
+            if (isSync && syncRole === 'presenter') {
+                try {
+                    firebase.database().ref('presentation/zoomedCard').set({
+                        cardIndex: parseInt(card.dataset.cardIndex),
+                        timestamp: Date.now()
+                    });
+                } catch(e) {}
+            }
+        });
+    });
+
+    zoomOverlay.addEventListener('click', () => {
+        closeZoom();
+        // If presenter with sync, broadcast close
+        if (isSync && syncRole === 'presenter') {
+            try {
+                firebase.database().ref('presentation/zoomedCard').set(null);
+            } catch(e) {}
+        }
+    });
+
+    // VIEWER: listen for card zoom from presenter
+    if (isSync && syncRole !== 'presenter') {
+        try {
+            firebase.database().ref('presentation/zoomedCard').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data && typeof data.cardIndex === 'number') {
+                    const card = allCards[data.cardIndex];
+                    if (card) zoomCard(card);
+                } else {
+                    closeZoom();
                 }
-                zoomOverlay.classList.add('active');
             });
-        });
-
-        // Tap overlay or hint to close
-        zoomOverlay.addEventListener('click', () => {
-            zoomOverlay.classList.remove('active');
-        });
+        } catch(e) {}
     }
 </script>
 </body>
