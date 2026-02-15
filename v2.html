@@ -745,6 +745,7 @@
     });
     const dots = document.querySelectorAll('.nav-dot');
     const sectionObserver = new IntersectionObserver((entries) => {
+        if (presenting) return; // dots are managed by goToSlide in presentation mode
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 const index = Array.from(sections).indexOf(entry.target);
@@ -762,6 +763,7 @@
     let currentSection = 0;
     let onSectionChange = null; // hook for Firebase sync
     const scrollObserver2 = new IntersectionObserver((entries) => {
+        if (presenting) return; // skip during presentation mode
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 currentSection = Array.from(sections).indexOf(entry.target);
