@@ -929,13 +929,30 @@
     const params = new URLSearchParams(window.location.search);
     const syncRole = params.get('role'); // 'presenter' or null (viewer)
 
-    if (syncRole === 'presenter' || syncRole === 'viewer' || params.has('sync')) {
+    // Debug: show sync status visually
+    function debugMsg(msg) {
+        const syncLabel = document.getElementById('syncLabel');
+        if (syncLabel) syncLabel.textContent = msg;
+        console.log('[sync]', msg);
+    }
+
+    const isSync = syncRole === 'presenter' || syncRole === 'viewer' || params.has('sync');
+    if (isSync) {
+        // Show badge immediately
+        const syncBadge = document.getElementById('syncBadge');
+        syncBadge.style.display = 'block';
+        syncBadge.classList.add(syncRole === 'presenter' ? 'presenter' : 'viewer');
+        debugMsg('Initializing...');
+    }
+
+    if (isSync) {
         try {
+            if (typeof firebase === 'undefined') { debugMsg('ERROR: Firebase SDK not loaded'); throw new Error('no sdk'); }
             const fbApp = firebase.initializeApp(firebaseConfig);
+            debugMsg('Firebase initialized');
             const db = firebase.database();
             const slideRef = db.ref('presentation/currentSlide');
             const syncBadge = document.getElementById('syncBadge');
-            const syncLabel = document.getElementById('syncLabel');
 
             if (syncRole === 'presenter') {
                 // PRESENTER: broadcast slide changes
@@ -955,12 +972,11 @@
 
             } else {
                 // VIEWER: follow presenter's slide
-                syncBadge.style.display = 'block';
-                syncBadge.classList.add('viewer');
-                syncLabel.textContent = 'Connecting...';
+                debugMsg('Viewer mode');
 
                 // Auto-enter presentation mode after a short delay for mobile layout
                 setTimeout(() => {
+                    debugMsg('Entering presentation...');
                     window.scrollTo(0, 0);
                     presenting = true;
                     document.body.classList.add('presenting');
@@ -975,17 +991,23 @@
                         document.getElementById('exitHint').textContent = 'Tap to exit';
                     }
 
-                    setTimeout(() => goToSlide(0), 50);
+                    setTimeout(() => {
+                        goToSlide(0);
+                        debugMsg('Listening for presenter...');
 
-                    // Listen for slide changes from presenter
-                    slideRef.on('value', (snapshot) => {
-                        const data = snapshot.val();
-                        if (data && typeof data.slide === 'number') {
-                            syncLabel.textContent = 'Following presenter';
-                            goToSlide(data.slide);
-                        }
-                    });
-                }, 200);
+                        // Listen for slide changes from presenter
+                        slideRef.on('value', (snapshot) => {
+                            const data = snapshot.val();
+                            debugMsg('Got slide: ' + JSON.stringify(data));
+                            if (data && typeof data.slide === 'number') {
+                                goToSlide(data.slide);
+                                debugMsg('Slide ' + (data.slide + 1) + ' - Following');
+                            }
+                        }, (error) => {
+                            debugMsg('DB error: ' + error.message);
+                        });
+                    }, 100);
+                }, 300);
             }
         } catch(e) {
             console.error('Firebase sync error:', e);
