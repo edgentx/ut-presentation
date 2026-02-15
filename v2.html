@@ -619,13 +619,15 @@
             else if (roll < 0.9) r = Math.random() * 3 + 4.5;     // large: 4.5-7.5
             else r = Math.random() * 4 + 7;                        // extra large: 7-11
 
+            const isWhite = Math.random() < 0.4;
             particles.push({
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
                 vx: (Math.random() - 0.5) * (0.6 / (r * 0.3 + 1)),
                 vy: (Math.random() - 0.5) * (0.6 / (r * 0.3 + 1)),
                 r: r,
-                pulse: Math.random() * Math.PI * 2
+                pulse: Math.random() * Math.PI * 2,
+                rgb: isWhite ? '255,255,255' : '248,151,31'
             });
         }
 
@@ -640,14 +642,14 @@
                 const glow = 0.2 + Math.sin(p.pulse) * 0.15;
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(248,151,31,${glow})`;
+                ctx.fillStyle = `rgba(${p.rgb},${glow})`;
                 ctx.fill();
 
                 // Larger particles get a subtle outer glow
                 if (p.r > 4) {
                     ctx.beginPath();
                     ctx.arc(p.x, p.y, p.r + 4, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(248,151,31,${glow * 0.15})`;
+                    ctx.fillStyle = `rgba(${p.rgb},${glow * 0.15})`;
                     ctx.fill();
                 }
 
@@ -660,7 +662,9 @@
                         ctx.moveTo(p.x, p.y);
                         ctx.lineTo(particles[j].x, particles[j].y);
                         const lineAlpha = 0.12 * (1 - dist / 150);
-                        ctx.strokeStyle = `rgba(248,151,31,${lineAlpha})`;
+                        // Blend colors between connected particles
+                        const midRgb = p.rgb === particles[j].rgb ? p.rgb : '248,200,130';
+                        ctx.strokeStyle = `rgba(${midRgb},${lineAlpha})`;
                         ctx.lineWidth = Math.min(p.r, particles[j].r) * 0.15 + 0.3;
                         ctx.stroke();
                     }
