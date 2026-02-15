@@ -289,6 +289,37 @@
         .sync-badge.viewer .dot { background: #fff; }
         @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
+        /* Card zoom overlay for mobile */
+        .card-zoom-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 500;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .card-zoom-overlay.active { display: flex; }
+        .card-zoom-content {
+            max-width: 90vw;
+            max-height: 80vh;
+            overflow-y: auto;
+            border-radius: 16px;
+            padding: 30px 25px;
+            animation: zoomIn 0.25s ease;
+            -webkit-overflow-scrolling: touch;
+        }
+        .card-zoom-content h3 { font-size: 1.3rem !important; margin-bottom: 12px !important; }
+        .card-zoom-content p { font-size: 1rem !important; line-height: 1.6 !important; }
+        .card-zoom-content .tag { font-size: 0.7rem !important; padding: 4px 10px !important; margin-bottom: 12px !important; }
+        .card-zoom-content .card-accent { width: 40px !important; height: 4px !important; margin-bottom: 15px !important; }
+        .card-zoom-content .icon { width: 45px !important; height: 45px !important; font-size: 22px !important; margin-bottom: 12px !important; }
+        .card-zoom-content .number { font-size: 3rem !important; }
+        .card-zoom-hint { color: rgba(255,255,255,0.5); font-size: 0.7rem; text-align: center; margin-top: 12px; letter-spacing: 1px; text-transform: uppercase; font-family: 'Inter', sans-serif; }
+        @keyframes zoomIn { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
         /* ===== MOBILE RESPONSIVE ===== */
         @media (max-width: 768px) {
             .hero-content h1 { font-size: 2rem; }
@@ -340,6 +371,7 @@
 <body>
 
 <div class="sync-badge" id="syncBadge" style="display:none;"><span class="dot"></span><span id="syncLabel"></span></div>
+<div class="card-zoom-overlay" id="cardZoom"><div class="card-zoom-content" id="cardZoomContent"></div><div class="card-zoom-hint">Tap to close</div></div>
 <nav class="nav-dots" id="navDots"></nav>
 <div class="key-hint" id="keyHint">Scroll or use arrow keys</div>
 <button class="present-btn" id="presentBtn" title="Press F5 to present">&#9654; Present</button>
@@ -1098,6 +1130,38 @@
         } catch(e) {
             console.error('Firebase sync error:', e);
         }
+    }
+
+    // ===== MOBILE TAP-TO-ZOOM CARDS =====
+    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768) {
+        const zoomOverlay = document.getElementById('cardZoom');
+        const zoomContent = document.getElementById('cardZoomContent');
+
+        document.querySelectorAll('.resource-card, .challenge-card, .approach-card').forEach(card => {
+            card.style.cursor = 'pointer';
+            card.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Clone the card content into the zoom overlay
+                zoomContent.innerHTML = card.innerHTML;
+                // Copy the card's background and text color
+                const style = getComputedStyle(card);
+                zoomContent.style.background = style.backgroundColor;
+                zoomContent.style.color = style.color;
+                // Match approach card specific colors
+                if (card.classList.contains('approach-card')) {
+                    const idx = Array.from(card.parentElement.children).indexOf(card);
+                    if (idx === 0) { zoomContent.style.background = '#bf5700'; zoomContent.style.color = 'white'; }
+                    else if (idx === 1) { zoomContent.style.background = '#333f48'; zoomContent.style.color = 'white'; }
+                    else { zoomContent.style.background = 'white'; zoomContent.style.color = '#333f48'; }
+                }
+                zoomOverlay.classList.add('active');
+            });
+        });
+
+        // Tap overlay or hint to close
+        zoomOverlay.addEventListener('click', () => {
+            zoomOverlay.classList.remove('active');
+        });
     }
 </script>
 </body>
