@@ -953,6 +953,9 @@
                 syncBadge.classList.add('presenter');
                 syncLabel.textContent = 'Presenter';
 
+                // Scroll to top on load to reset position
+                window.scrollTo(0, 0);
+
                 // Override goToSlide to also push to Firebase (presentation mode)
                 const originalGoToSlide = goToSlide;
                 goToSlide = function(n) {
@@ -960,15 +963,17 @@
                     slideRef.set({ slide: currentSlide, timestamp: Date.now() });
                 };
 
-                // Also broadcast when scrolling in normal (non-presentation) mode
-                onSectionChange = function(sectionIndex) {
-                    if (!presenting) {
-                        slideRef.set({ slide: sectionIndex, timestamp: Date.now() });
-                    }
-                };
-
-                // Set initial slide
+                // Set initial slide immediately
                 slideRef.set({ slide: 0, timestamp: Date.now() });
+
+                // Delay scroll sync hook so initial observer events don't override slide 0
+                setTimeout(() => {
+                    onSectionChange = function(sectionIndex) {
+                        if (!presenting) {
+                            slideRef.set({ slide: sectionIndex, timestamp: Date.now() });
+                        }
+                    };
+                }, 1000);
 
             } else {
                 // VIEWER: follow presenter's slide
