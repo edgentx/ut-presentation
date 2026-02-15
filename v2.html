@@ -288,6 +288,34 @@
         .sync-badge.presenter .dot { background: #fff; }
         .sync-badge.viewer .dot { background: #fff; }
         @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        /* ===== MOBILE RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .hero-content h1 { font-size: 2rem; }
+            .hero-content .subtitle { font-size: 1rem; }
+            .challenge { padding: 40px 20px; }
+            .challenge-grid { grid-template-columns: 1fr; gap: 30px; }
+            .challenge-cards { grid-template-columns: 1fr; }
+            .resources-section { padding: 40px 20px; }
+            .resources-grid { grid-template-columns: 1fr !important; }
+            .resource-card { padding: 20px; }
+            .section-intro { font-size: 0.95rem; }
+            .approach { padding: 40px 20px; }
+            .approach-grid { grid-template-columns: 1fr !important; gap: 15px; margin-top: 20px; }
+            .approach-card { padding: 25px 20px; }
+            .approach-card .number { font-size: 2.5rem; }
+            .approach-card h3 { font-size: 1.1rem; }
+            .approach-card p { font-size: 0.85rem; }
+            .stats-bar { padding: 40px 20px; }
+            .stats-bar .stat-number { font-size: 1.8rem; }
+            .stats-bar .stat-label { font-size: 0.7rem; }
+            .stats-bar .stat-sub { font-size: 0.6rem; }
+            .closing-content h2 { font-size: 2rem; }
+            .closing-content p { font-size: 1rem; padding: 0 20px; }
+            .banner-text p { font-size: 1.1rem; padding: 0 20px; }
+            .majors-marquee { font-size: 0.7rem; }
+            body.presenting section { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        }
     </style>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
