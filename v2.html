@@ -942,7 +942,7 @@
             return;
         }
         if (presenting) {
-            if (e.key === 'Escape') { exitPresentation(); return; }
+            if (e.key === 'Escape') { if (isSync && syncRole !== 'presenter') return; exitPresentation(); return; }
             if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
                 e.preventDefault();
                 goToSlide(currentSlide + 1);
@@ -963,9 +963,9 @@
         }
     });
 
-    // Tappable exit hint
+    // Tappable exit hint (not for sync viewers)
     document.getElementById('exitHint').addEventListener('click', () => {
-        if (presenting) exitPresentation();
+        if (presenting && !(isSync && syncRole !== 'presenter')) exitPresentation();
     });
 
     // Mobile detection & label
@@ -994,10 +994,10 @@
 
     // Exit fullscreen also exits presentation mode
     document.addEventListener('fullscreenchange', () => {
-        if (!document.fullscreenElement && presenting) exitPresentation();
+        if (!document.fullscreenElement && presenting && !(isSync && syncRole !== 'presenter')) exitPresentation();
     });
     document.addEventListener('webkitfullscreenchange', () => {
-        if (!document.webkitFullscreenElement && presenting) exitPresentation();
+        if (!document.webkitFullscreenElement && presenting && !(isSync && syncRole !== 'presenter')) exitPresentation();
     });
 
     // Inject corner Longhorn logo into every section
@@ -1018,9 +1018,10 @@
     };
 
     const params = new URLSearchParams(window.location.search);
-    const syncRole = params.get('role'); // 'presenter' or null (viewer)
+    const syncRole = params.get('role'); // 'presenter' or null (viewer/sync by default)
 
-    const isSync = syncRole === 'presenter' || syncRole === 'viewer' || params.has('sync');
+    // Default to sync mode — only ?role=presenter is the special case
+    const isSync = true;
 
     if (isSync) {
         try {
@@ -1066,9 +1067,10 @@
                 syncBadge.classList.add('viewer');
                 syncLabel.textContent = 'Connecting...';
 
-                // Hide present button and key hint for viewers
+                // Hide present button, key hint, and exit hint for viewers
                 document.getElementById('presentBtn').style.display = 'none';
                 document.getElementById('keyHint').style.display = 'none';
+                document.getElementById('exitHint').style.setProperty('display', 'none', 'important');
 
                 let latestSlide = 0; // track latest slide from Firebase
 
