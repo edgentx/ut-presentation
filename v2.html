@@ -143,22 +143,26 @@
         .floating-shapes { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
         .floating-shapes .shape {
             position: absolute;
-            border: 2px solid rgba(191,87,0,0.08);
+            border: 2px solid rgba(191,87,0,0.15);
+            background: rgba(191,87,0,0.03);
             border-radius: 4px;
             animation: floatShape 20s infinite ease-in-out;
         }
-        .floating-shapes .shape:nth-child(1) { width: 60px; height: 60px; top: 10%; left: 5%; animation-delay: 0s; animation-duration: 18s; }
-        .floating-shapes .shape:nth-child(2) { width: 40px; height: 40px; top: 70%; left: 85%; animation-delay: -4s; animation-duration: 22s; border-radius: 50%; }
-        .floating-shapes .shape:nth-child(3) { width: 80px; height: 80px; top: 30%; left: 90%; animation-delay: -8s; animation-duration: 25s; transform: rotate(45deg); }
-        .floating-shapes .shape:nth-child(4) { width: 50px; height: 50px; top: 80%; left: 15%; animation-delay: -12s; animation-duration: 20s; border-radius: 50%; }
-        .floating-shapes .shape:nth-child(5) { width: 35px; height: 35px; top: 50%; left: 50%; animation-delay: -6s; animation-duration: 16s; }
+        .floating-shapes .shape:nth-child(1) { width: 80px; height: 80px; top: 8%; left: 4%; animation-delay: 0s; animation-duration: 18s; }
+        .floating-shapes .shape:nth-child(2) { width: 50px; height: 50px; top: 65%; left: 82%; animation-delay: -4s; animation-duration: 22s; border-radius: 50%; }
+        .floating-shapes .shape:nth-child(3) { width: 120px; height: 120px; top: 25%; left: 88%; animation-delay: -8s; animation-duration: 25s; }
+        .floating-shapes .shape:nth-child(4) { width: 65px; height: 65px; top: 75%; left: 12%; animation-delay: -12s; animation-duration: 20s; border-radius: 50%; }
+        .floating-shapes .shape:nth-child(5) { width: 45px; height: 45px; top: 45%; left: 48%; animation-delay: -6s; animation-duration: 16s; }
+        .floating-shapes .shape:nth-child(6) { width: 35px; height: 35px; top: 15%; left: 55%; animation-delay: -3s; animation-duration: 19s; border-radius: 50%; }
+        .floating-shapes .shape:nth-child(7) { width: 95px; height: 95px; top: 55%; left: 35%; animation-delay: -10s; animation-duration: 24s; }
+        .floating-shapes .shape:nth-child(8) { width: 55px; height: 55px; top: 85%; left: 65%; animation-delay: -7s; animation-duration: 17s; border-radius: 50%; }
         @keyframes floatShape {
-            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.4; }
-            25% { transform: translateY(-30px) rotate(90deg); opacity: 0.8; }
-            50% { transform: translateY(10px) rotate(180deg); opacity: 0.3; }
-            75% { transform: translateY(-20px) rotate(270deg); opacity: 0.7; }
+            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.5; }
+            25% { transform: translateY(-40px) rotate(90deg); opacity: 1; }
+            50% { transform: translateY(15px) rotate(180deg); opacity: 0.4; }
+            75% { transform: translateY(-25px) rotate(270deg); opacity: 0.9; }
         }
-        .dark .floating-shapes .shape { border-color: rgba(248,151,31,0.08); }
+        .dark .floating-shapes .shape { border-color: rgba(248,151,31,0.12); background: rgba(248,151,31,0.03); }
 
         /* ===== ENHANCED CARD ANIMATIONS ===== */
         .challenge-card { transform: translateX(-60px) rotate(-2deg); opacity: 0; }
@@ -322,7 +326,7 @@
 
 <!-- ===== THE CHALLENGE ===== -->
 <section class="challenge" id="s1">
-    <div class="floating-shapes"><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div></div>
+    <div class="floating-shapes"><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div></div>
     <div class="challenge-grid">
         <div class="challenge-text">
             <h2 class="fade-in">The <span>Transition</span> Challenge</h2>
@@ -408,7 +412,7 @@
 
 <!-- ===== ACADEMIC SUPPORT ===== -->
 <section class="resources-section white" id="s3">
-    <div class="floating-shapes"><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div></div>
+    <div class="floating-shapes"><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div></div>
     <div style="max-width:1200px;width:100%;">
         <div class="section-label fade-in" style="color:var(--orange)">Academics</div>
         <h2 class="fade-in">Academic Support</h2>
@@ -493,7 +497,7 @@
 
 <!-- ===== CAREER READINESS ===== -->
 <section class="resources-section light" id="s5">
-    <div class="floating-shapes"><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div></div>
+    <div class="floating-shapes"><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div></div>
     <div style="max-width:1200px;width:100%;">
         <div class="section-label fade-in" style="color:var(--orange)">Careers</div>
         <h2 class="fade-in">Career Readiness</h2>
@@ -532,7 +536,7 @@
 
 <!-- ===== MY APPROACH ===== -->
 <section class="approach" id="s6">
-    <div class="floating-shapes"><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div></div>
+    <div class="floating-shapes"><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div><div class="shape"></div></div>
     <div style="max-width:1200px;width:100%;">
         <div class="section-label fade-in" style="color:var(--orange)">My Approach</div>
         <h2 class="fade-in" style="color:var(--charcoal);">Bringing It All Together</h2>
@@ -584,12 +588,21 @@
         window.addEventListener('resize', resize);
 
         for (let i = 0; i < count; i++) {
+            // Varying sizes: mostly small, some medium, a few large
+            let r;
+            const roll = Math.random();
+            if (roll < 0.4) r = Math.random() * 1.5 + 0.5;       // small: 0.5-2
+            else if (roll < 0.7) r = Math.random() * 2.5 + 2;     // medium: 2-4.5
+            else if (roll < 0.9) r = Math.random() * 3 + 4.5;     // large: 4.5-7.5
+            else r = Math.random() * 4 + 7;                        // extra large: 7-11
+
             particles.push({
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
-                vx: (Math.random() - 0.5) * 0.5,
-                vy: (Math.random() - 0.5) * 0.5,
-                r: Math.random() * 2 + 1
+                vx: (Math.random() - 0.5) * (0.6 / (r * 0.3 + 1)),
+                vy: (Math.random() - 0.5) * (0.6 / (r * 0.3 + 1)),
+                r: r,
+                pulse: Math.random() * Math.PI * 2
             });
         }
 
@@ -597,24 +610,35 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             particles.forEach((p, i) => {
                 p.x += p.vx; p.y += p.vy;
+                p.pulse += 0.02;
                 if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
                 if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
 
+                const glow = 0.2 + Math.sin(p.pulse) * 0.15;
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(248,151,31,0.3)';
+                ctx.fillStyle = `rgba(248,151,31,${glow})`;
                 ctx.fill();
+
+                // Larger particles get a subtle outer glow
+                if (p.r > 4) {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r + 4, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(248,151,31,${glow * 0.15})`;
+                    ctx.fill();
+                }
 
                 for (let j = i + 1; j < particles.length; j++) {
                     const dx = p.x - particles[j].x;
                     const dy = p.y - particles[j].y;
                     const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < 120) {
+                    if (dist < 150) {
                         ctx.beginPath();
                         ctx.moveTo(p.x, p.y);
                         ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.strokeStyle = `rgba(248,151,31,${0.15 * (1 - dist / 120)})`;
-                        ctx.lineWidth = 0.5;
+                        const lineAlpha = 0.12 * (1 - dist / 150);
+                        ctx.strokeStyle = `rgba(248,151,31,${lineAlpha})`;
+                        ctx.lineWidth = Math.min(p.r, particles[j].r) * 0.15 + 0.3;
                         ctx.stroke();
                     }
                 }
