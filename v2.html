@@ -259,7 +259,7 @@
         .progress-bar { display: none; position: fixed; top: 0; left: 0; height: 3px; background: var(--tangerine); z-index: 200; transition: width 0.4s ease; }
         body.presenting .progress-bar { display: block; }
 
-        .present-exit-hint { display: none; position: fixed; top: 20px; right: 20px; z-index: 200; color: rgba(255,255,255,0.3); font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase; }
+        .present-exit-hint { display: none; position: fixed; top: 15px; right: 15px; z-index: 200; color: rgba(255,255,255,0.5); font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; padding: 8px 14px; border-radius: 6px; background: rgba(0,0,0,0.3); -webkit-tap-highlight-color: transparent; }
         body.presenting .present-exit-hint { display: block; }
 
         /* Slide transitions in presentation mode */
@@ -290,6 +290,12 @@
 <div class="slide-counter" id="slideCounter"></div>
 <div class="progress-bar" id="progressBar"></div>
 <div class="present-exit-hint" id="exitHint">ESC to exit</div>
+<div class="present-nav-mobile" id="mobileNav" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;padding:12px;pointer-events:none;">
+    <div style="display:flex;justify-content:space-between;pointer-events:auto;">
+        <button onclick="goToSlide(currentSlide-1)" style="background:rgba(0,0,0,0.4);color:white;border:none;padding:12px 24px;border-radius:8px;font-size:1rem;cursor:pointer;">&#9650; Prev</button>
+        <button onclick="goToSlide(currentSlide+1)" style="background:rgba(0,0,0,0.4);color:white;border:none;padding:12px 24px;border-radius:8px;font-size:1rem;cursor:pointer;">Next &#9660;</button>
+    </div>
+</div>
 
 <!-- ===== HERO ===== -->
 <section class="hero" id="s0">
@@ -785,16 +791,27 @@
 
     function enterPresentation() {
         presenting = true;
+        // Scroll to top first to prevent mobile jump
+        window.scrollTo(0, 0);
         document.body.classList.add('presenting');
         document.documentElement.style.scrollSnapType = 'none';
         document.documentElement.style.overflow = 'hidden';
-        // Request fullscreen
+        document.body.style.overflow = 'hidden';
+        // Reset slide index
+        currentSlide = 0;
+        allSlides.forEach(s => s.classList.remove('slide-active'));
+        // Request fullscreen (may not be available on mobile)
         if (document.documentElement.requestFullscreen) {
             document.documentElement.requestFullscreen();
         } else if (document.documentElement.webkitRequestFullscreen) {
             document.documentElement.webkitRequestFullscreen();
         }
-        goToSlide(0);
+        // Show mobile nav buttons on mobile
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768) {
+            document.getElementById('mobileNav').style.display = 'block';
+        }
+        // Delay goToSlide to let layout settle on mobile
+        setTimeout(() => goToSlide(0), 50);
     }
 
     function exitPresentation() {
@@ -802,7 +819,9 @@
         document.body.classList.remove('presenting');
         document.documentElement.style.scrollSnapType = '';
         document.documentElement.style.overflow = '';
+        document.body.style.overflow = '';
         allSlides.forEach(s => s.classList.remove('slide-active'));
+        document.getElementById('mobileNav').style.display = 'none';
         if (document.fullscreenElement || document.webkitFullscreenElement) {
             if (document.exitFullscreen) document.exitFullscreen();
             else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
@@ -840,6 +859,35 @@
             else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); currentSection = Math.max(currentSection - 1, 0); sections[currentSection].scrollIntoView({ behavior: 'smooth' }); }
         }
     });
+
+    // Tappable exit hint
+    document.getElementById('exitHint').addEventListener('click', () => {
+        if (presenting) exitPresentation();
+    });
+
+    // Mobile detection & label
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+    if (isMobile) {
+        document.getElementById('exitHint').textContent = 'Tap to exit';
+    }
+
+    // Touch swipe navigation for mobile
+    let touchStartY = 0;
+    document.addEventListener('touchstart', (e) => {
+        if (presenting) touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    document.addEventListener('touchend', (e) => {
+        if (!presenting) return;
+        const diff = touchStartY - e.changedTouches[0].clientY;
+        if (Math.abs(diff) > 50) {
+            if (diff > 0) goToSlide(currentSlide + 1);
+            else goToSlide(currentSlide - 1);
+        }
+    });
+
+    // Show/hide mobile nav in presentation mode
+    const mobileNav = document.getElementById('mobileNav');
+    const origEnter = enterPresentation;
 
     // Exit fullscreen also exits presentation mode
     document.addEventListener('fullscreenchange', () => {
