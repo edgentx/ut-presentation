@@ -381,7 +381,8 @@
 
 <!-- ===== START BEFORE DAY ONE ===== -->
 <section class="resources-section dark" id="s2">
-    <div style="max-width:1200px;width:100%;">
+    <canvas id="darkParticles1" style="position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;"></canvas>
+    <div style="max-width:1200px;width:100%;position:relative;z-index:1;">
         <div class="section-label fade-in">Pre-Arrival</div>
         <h2 class="fade-in">Start Before Day One</h2>
         <p class="section-intro fade-in">The transition begins before classes start. Connecting with students early sets the tone for their entire Cockrell experience.</p>
@@ -473,7 +474,8 @@
 
 <!-- ===== COMMUNITY ===== -->
 <section class="resources-section dark" id="s4">
-    <div style="max-width:1200px;width:100%;">
+    <canvas id="darkParticles2" style="position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;"></canvas>
+    <div style="max-width:1200px;width:100%;position:relative;z-index:1;">
         <div class="section-label fade-in">Belonging</div>
         <h2 class="fade-in">Community and Belonging</h2>
         <p class="section-intro fade-in">Academic support alone is not enough. Students need to feel like they belong. The Cockrell School is the #5 producer of minority BS engineering graduates and #14 for women nationally.</p>
@@ -667,6 +669,8 @@
         draw();
     }
     initParticles('statsParticles');
+    initParticles('darkParticles1');
+    initParticles('darkParticles2');
 
     // ===== SCROLL MODE (default) =====
     const observer = new IntersectionObserver((entries) => {
