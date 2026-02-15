@@ -280,10 +280,22 @@
             transform: scale(1);
             z-index: 10;
         }
+        /* Sync role badge */
+        .sync-badge { position: fixed; top: 15px; left: 15px; z-index: 300; padding: 6px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; font-family: 'Inter', sans-serif; }
+        .sync-badge.presenter { background: var(--orange); color: white; }
+        .sync-badge.viewer { background: var(--tangerine); color: white; }
+        .sync-badge .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; animation: pulse-dot 1.5s infinite; }
+        .sync-badge.presenter .dot { background: #fff; }
+        .sync-badge.viewer .dot { background: #fff; }
+        @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
     </style>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
+<div class="sync-badge" id="syncBadge" style="display:none;"><span class="dot"></span><span id="syncLabel"></span></div>
 <nav class="nav-dots" id="navDots"></nav>
 <div class="key-hint" id="keyHint">Scroll or use arrow keys</div>
 <button class="present-btn" id="presentBtn" title="Press F5 to present">&#9654; Present</button>
@@ -902,6 +914,67 @@
     document.querySelectorAll('section').forEach(s => {
         s.insertAdjacentHTML('beforeend', logoSVG);
     });
+
+    // ===== FIREBASE REAL-TIME SYNC =====
+    const firebaseConfig = {
+        apiKey: "AIzaSyBu2ufFhke40iLBx9eQUqSfjcPXy6KFol4",
+        authDomain: "ut-presentation.firebaseapp.com",
+        databaseURL: "https://ut-presentation-default-rtdb.firebaseio.com",
+        projectId: "ut-presentation",
+        storageBucket: "ut-presentation.firebasestorage.app",
+        messagingSenderId: "806141884568",
+        appId: "1:806141884568:web:2bee6e56e62eb3068cb8ed"
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const syncRole = params.get('role'); // 'presenter' or null (viewer)
+
+    if (syncRole === 'presenter' || syncRole === 'viewer' || params.has('sync')) {
+        const fbApp = firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const slideRef = db.ref('presentation/currentSlide');
+        const syncBadge = document.getElementById('syncBadge');
+        const syncLabel = document.getElementById('syncLabel');
+
+        if (syncRole === 'presenter') {
+            // PRESENTER: broadcast slide changes
+            syncBadge.style.display = 'block';
+            syncBadge.classList.add('presenter');
+            syncLabel.textContent = 'Presenter';
+
+            // Override goToSlide to also push to Firebase
+            const originalGoToSlide = goToSlide;
+            goToSlide = function(n) {
+                originalGoToSlide(n);
+                slideRef.set({ slide: currentSlide, timestamp: Date.now() });
+            };
+
+            // Set initial slide
+            slideRef.set({ slide: 0, timestamp: Date.now() });
+
+        } else {
+            // VIEWER: follow presenter's slide
+            syncBadge.style.display = 'block';
+            syncBadge.classList.add('viewer');
+            syncLabel.textContent = 'Following presenter';
+
+            // Auto-enter presentation mode
+            presenting = true;
+            document.body.classList.add('presenting');
+            document.documentElement.style.scrollSnapType = 'none';
+            document.documentElement.style.overflow = 'hidden';
+            document.body.style.overflow = 'hidden';
+            goToSlide(0);
+
+            // Listen for slide changes
+            slideRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data && typeof data.slide === 'number') {
+                    goToSlide(data.slide);
+                }
+            });
+        }
+    }
 </script>
 </body>
 </html>
